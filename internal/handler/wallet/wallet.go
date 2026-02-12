@@ -26,18 +26,18 @@ func (h *Handler) Operate(w http.ResponseWriter, r *http.Request) {
 	var req WalletRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		log.Printf("decode error: %v", err)
-		http.Error(w, "invalid request body", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	if req.Amount <= 0 {
 		log.Printf("invalid amount: %d", req.Amount)
-		http.Error(w, walletErrors.ErrInvalidAmount.Error(), http.StatusBadRequest)
+        w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	if req.OperationType != domain.Deposit && req.OperationType != domain.Withdraw {
 		log.Printf("invalid operation type: %s", req.OperationType)
-		http.Error(w, walletErrors.ErrInvalidOperation.Error(), http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -57,14 +57,14 @@ func (h *Handler) Operate(w http.ResponseWriter, r *http.Request) {
 
 		switch {
 		case errors.Is(err, walletErrors.ErrNotEnoughFunds):
-			http.Error(w, err.Error(), http.StatusConflict)
+            w.WriteHeader(http.StatusConflict)
 		case errors.Is(err, walletErrors.ErrWalletNotFound):
-			http.Error(w, err.Error(), http.StatusNotFound)
+            w.WriteHeader(http.StatusNotFound)
 		case errors.Is(err, walletErrors.ErrInvalidAmount),
 			errors.Is(err, walletErrors.ErrInvalidOperation):
-			http.Error(w, err.Error(), http.StatusBadRequest)
+            w.WriteHeader(http.StatusBadRequest)
 		default:
-			http.Error(w, "internal server error", http.StatusInternalServerError)
+            w.WriteHeader(http.StatusInternalServerError)
 		}
 		return
 	}
@@ -79,7 +79,6 @@ func (h *Handler) Operate(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(res); err != nil {
 		log.Printf("JSON encode error: %v", err)
-		http.Error(w, "internal server error", http.StatusInternalServerError)
 	}
 }
 
@@ -90,7 +89,7 @@ func (h *Handler) Balance(w http.ResponseWriter, r *http.Request) {
 	id, err := uuid.Parse(idStr)
 	if err != nil {
 		log.Printf("invalid uuid: %v", err)
-		http.Error(w, "invalid wallet id", http.StatusBadRequest)
+        w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -99,10 +98,10 @@ func (h *Handler) Balance(w http.ResponseWriter, r *http.Request) {
 		log.Printf("balance error: %v", err)
 
 		if errors.Is(err, walletErrors.ErrWalletNotFound) {
-			http.Error(w, err.Error(), http.StatusNotFound)
+            w.WriteHeader(http.StatusNotFound)
 			return
 		}
-		http.Error(w, "internal server error", http.StatusInternalServerError)
+        w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
@@ -116,6 +115,6 @@ func (h *Handler) Balance(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(res); err != nil {
 		log.Printf("JSON encode error: %v", err)
-		http.Error(w, "internal server error", http.StatusInternalServerError)
 	}
 }
+

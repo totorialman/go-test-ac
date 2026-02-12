@@ -1,3 +1,4 @@
+//go:generate mockgen -source=contract.go -destination=wallet_repository_mocks_test.go -package=wallet_test
 package wallet
 
 import (
