@@ -1,11 +1,11 @@
-### 1. Запустите базу данных
+### 1. Запустить БД
 
 ```bash
-docker compose up -d postgres
+docker-compose up -d postgres
 ```
 
-### 2. Примените миграции
-Выполните миграции с помощью `goose`:
+### 2. Применить миграции
+Миграции с помощью `goose`:
 
 ```bash
 goose -dir migrations postgres "host=localhost port=5432 user=myuser password=mypassword dbname=test_db sslmode=disable" up
@@ -16,10 +16,10 @@ goose -dir migrations postgres "host=localhost port=5432 user=myuser password=my
 go install github.com/pressly/goose/v3@latest
 ```
 
-### 3. Запустите приложение
+### 3. Запустить приложение
 
 ```bash
-docker compose up --build
+docker-compose up --build
 ```
 Приложение будет доступно на `http://localhost:8080`.
 
